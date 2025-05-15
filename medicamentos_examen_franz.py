@@ -65,16 +65,18 @@ def actualizar_tablas():
     resumen = df.groupby(["Producto", "Tipo"])["Cantidad"].sum().unstack().fillna(0)
     resumen["Stock Actual"] = resumen.get("Entrada", 0) + resumen.get("Devolución", 0) - resumen.get("Salida", 0)
 
+    # Para las Salidas
+    resumen["Salidas"] = resumen.get("Entrada", 0) - resumen.get("Salida", 0)
+
+    # Para las Devoluciones
+    resumen["Devoluciones"] = resumen.get("Entrada", 0) + resumen.get("Devolución", 0)
+
     for fila in tabla_stock.get_children():
         tabla_stock.delete(fila)
 
     for producto, fila in resumen.iterrows():
-        tabla_stock.insert("", "end", values=(producto, fila.get("Entrada", 0), fila.get("Salida", 0),
-                                            fila.get("Devolución", 0), fila["Stock Actual"]))
+        tabla_stock.insert("", "end", values=(producto, fila.get("Entrada", 0), fila.get("Salida", 0), fila.get("Devolución", 0), fila["Stock Actual"]))
         
-# Funcion para la Salida de productos
-df = pd.read_excel(archivo)
-
 # Gráfico de stock
 def graficar_stock():
     df = pd.read_excel(archivo)
@@ -97,7 +99,7 @@ def graficar_historial():
 
 # Interfaz
 root = Tk()
-root.title("Sistema Profesional de Inventario-Franz Joel Quispe Mamani")
+root.title("Examen Practico Segundo Parcial-Franz Joel Quispe Mamani")
 root.geometry("1600x800")
 root.configure(bg="#f0f0f0")
 
@@ -127,18 +129,22 @@ combo_tipo = ttk.Combobox(frame, values=["Entrada", "Salida", "Devolución"], fo
 combo_tipo.grid(row=4, column=1, padx=10, pady=5)
 
 # Creando un nuevo frame para las fechas
-frame_grid = Frame(root, bg="#f0f0f0")
-frame_grid.pack(pady=10)
+nuevo_frame = Frame(root, bg="#f0f0f0")
+nuevo_frame.pack(pady=5)
 
-Label(frame_grid, text="Fecha de Vencimiento:", bg="#f0f0f0", font=("Arial", 12)).grid(row=0, column=0, padx=10, pady=5)
-entrada_fecha_vencimiento = ttkbootstrap.DateEntry(frame_grid, dateformat="%d-%m-%Y", bootstyle="info")
+Label(nuevo_frame, text="Fecha de Vencimiento:", bg="#f0f0f0", font=("Arial", 12)).grid(row=0, column=0, padx=10, pady=5)
+entrada_fecha_vencimiento = ttkbootstrap.DateEntry(nuevo_frame, dateformat="%d-%m-%Y", bootstyle="primary")
 entrada_fecha_vencimiento.grid(row=0, column=1, padx=10, pady=5)
 
-Label(frame_grid, text="Fecha de Ingreso:", bg="#f0f0f0", font=("Arial", 12)).grid(row=1, column=0, padx=10, pady=5)
-entrada_fecha_ingreso = ttkbootstrap.DateEntry(frame_grid, dateformat="%d-%m-%Y", bootstyle="info")
+Label(nuevo_frame, text="Fecha de Ingreso:", bg="#f0f0f0", font=("Arial", 12)).grid(row=1, column=0, padx=10, pady=5)
+entrada_fecha_ingreso = ttkbootstrap.DateEntry(nuevo_frame, dateformat="%d-%m-%Y", bootstyle="primary")
 entrada_fecha_ingreso.grid(row=1, column=1, padx=10, pady=5)
 
-Button(frame_grid, text="Registrar Movimiento", command=registrar_movimiento, bg="#4eed1c", fg="black", font=("Arial", 12)).grid(row=2, column=0, columnspan=2, pady=10)
+Button(nuevo_frame, text="Registrar Movimiento", command=registrar_movimiento, bg="sky blue", fg="black", font=("Arial", 12)).grid(row=2, column=0, columnspan=2, pady=10)
+
+# Botones de gráficos
+Button(nuevo_frame, text="📊 Ver Gráfico de Stock", command=graficar_stock, bg="#007bff", fg="white", font=("Arial", 12)).grid(row=3, column=0, padx=20)
+Button(nuevo_frame, text="📈 Ver Historial", command=graficar_historial, bg="#17a2b8", fg="white", font=("Arial", 12)).grid(row=3, column=1, padx=20)
 
 # Tabla de historial
 Label(root, text="Historial de Movimientos", font=("Arial", 12, "bold"), bg="#f0f0f0").pack()
@@ -156,12 +162,6 @@ for col in ["Producto", "Entradas", "Salidas", "Devoluciones", "Stock Actual"]:
     tabla_stock.heading(col, text=col)
     tabla_stock.column(col, anchor="center", width=130)
 tabla_stock.pack(padx=10, pady=10)
-
-# Botones de gráficos
-frame_graficos = Frame(root, bg="#f0f0f0")
-frame_graficos.pack(pady=10)
-Button(frame_graficos, text="📊 Ver Gráfico de Stock", command=graficar_stock, bg="#007bff", fg="white", font=("Arial", 12)).grid(row=0, column=0, padx=20)
-Button(frame_graficos, text="📈 Ver Historial", command=graficar_historial, bg="#17a2b8", fg="white", font=("Arial", 12)).grid(row=0, column=1, padx=20)
 
 actualizar_tablas()
 root.mainloop()
