@@ -3,7 +3,12 @@ import matplotlib.pyplot as plt
 from tkinter import *
 from tkinter import ttk, messagebox
 from datetime import datetime
+import ttkbootstrap
 import os
+
+# Franz Joel Quispe Mamani
+# Segundo Parcial de Simulacion y Modelacion, gestion II-2025
+# Modelo de Inventario
 
 # Crear archivo si no existe
 archivo = "inventarioExamenFranz.xlsx"
@@ -19,6 +24,8 @@ def registrar_movimiento():
     principio_activo = entrada_principio_activo.get()
     accion_terapeutica = entrada_accion_terapeutica.get()
     tipo = combo_tipo.get()
+    fecha_vencimiento = entrada_fecha_vencimiento.entry.get()
+    fecha_ingreso = entrada_fecha_ingreso.entry.get()
 
     if not producto or not cantidad or not tipo:
         messagebox.showerror("Error", "Todos los campos son obligatorios.")
@@ -31,11 +38,8 @@ def registrar_movimiento():
         messagebox.showerror("Error", "La cantidad debe ser un número entero positivo.")
         return
 
-    fecha = datetime.now().strftime("%Y-%m-%d")
+    fecha = datetime.now().strftime("%d-%m-%Y")
     hora = datetime.now().strftime("%H:%M:%S")
-
-    fecha_vencimiento = datetime.now().strftime("%Y-%m-%d")
-    fecha_ingreso = datetime.now().strftime("%Y-%m-%d")
 
     df = pd.read_excel(archivo)
 
@@ -66,7 +70,7 @@ def actualizar_tablas():
 
     for producto, fila in resumen.iterrows():
         tabla_stock.insert("", "end", values=(producto, fila.get("Entrada", 0), fila.get("Salida", 0),
-                                              fila.get("Devolución", 0), fila["Stock Actual"]))
+                                            fila.get("Devolución", 0), fila["Stock Actual"]))
         
 # Funcion para la Salida de productos
 df = pd.read_excel(archivo)
@@ -94,12 +98,13 @@ def graficar_historial():
 # Interfaz
 root = Tk()
 root.title("Sistema Profesional de Inventario-Franz Joel Quispe Mamani")
-root.geometry("1000x700")
+root.geometry("1600x800")
 root.configure(bg="#f0f0f0")
 
 frame = Frame(root, bg="#f0f0f0")
 frame.pack(pady=10)
 
+# Labels
 Label(frame, text="Producto:", bg="#f0f0f0", font=("Arial", 12)).grid(row=0, column=0, padx=10, pady=5)
 entrada_producto = Entry(frame, font=("Arial", 12))
 entrada_producto.grid(row=0, column=1, padx=10, pady=5)
@@ -121,7 +126,19 @@ Label(frame, text="Tipo de Movimiento:", bg="#f0f0f0", font=("Arial", 12)).grid(
 combo_tipo = ttk.Combobox(frame, values=["Entrada", "Salida", "Devolución"], font=("Arial", 12), state="readonly")
 combo_tipo.grid(row=4, column=1, padx=10, pady=5)
 
-Button(frame, text="Registrar Movimiento", command=registrar_movimiento, bg="#28a745", fg="white", font=("Arial", 12)).grid(row=5, column=0, columnspan=2, pady=10)
+# Creando un nuevo frame para las fechas
+frame_grid = Frame(root, bg="#f0f0f0")
+frame_grid.pack(pady=10)
+
+Label(frame_grid, text="Fecha de Vencimiento:", bg="#f0f0f0", font=("Arial", 12)).grid(row=0, column=0, padx=10, pady=5)
+entrada_fecha_vencimiento = ttkbootstrap.DateEntry(frame_grid, dateformat="%d-%m-%Y", bootstyle="info")
+entrada_fecha_vencimiento.grid(row=0, column=1, padx=10, pady=5)
+
+Label(frame_grid, text="Fecha de Ingreso:", bg="#f0f0f0", font=("Arial", 12)).grid(row=1, column=0, padx=10, pady=5)
+entrada_fecha_ingreso = ttkbootstrap.DateEntry(frame_grid, dateformat="%d-%m-%Y", bootstyle="info")
+entrada_fecha_ingreso.grid(row=1, column=1, padx=10, pady=5)
+
+Button(frame_grid, text="Registrar Movimiento", command=registrar_movimiento, bg="#4eed1c", fg="black", font=("Arial", 12)).grid(row=2, column=0, columnspan=2, pady=10)
 
 # Tabla de historial
 Label(root, text="Historial de Movimientos", font=("Arial", 12, "bold"), bg="#f0f0f0").pack()
